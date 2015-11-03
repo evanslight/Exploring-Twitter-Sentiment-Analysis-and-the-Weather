@@ -1,0 +1,358 @@
+<!-- Author: Hao DUAN<548771> Yu SUN <629341> -->
+<!-- Date: 30 Oct 2015 -->
+<!--This page is used to weather section, to present the melbourne map-->
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyAUp8jbEBYbF8fEszgTtCJUowIrK6KKV3U">
+</script>
+<script type="text/javascript" src="http://geoxml3.googlecode.com/svn/branches/polys/geoxml3.js">
+</script>
+<script type="text/javascript" src="https://geoxml3.googlecode.com/svn-history/r42/trunk/ProjectedOverlay.js">
+</script>
+<script type="text/javascript" src="http://geoxml3.googlecode.com/svn/branches/kmz/ZipFile.complete.js">
+</script>
+
+
+
+<script>
+var myCenter=new google.maps.LatLng(-37.818419, 144.964111);
+var filename = "https://raw.githubusercontent.com/evanslight/kmlMelbourne/master/melbourne.kml";
+var filename_highLight = "https://raw.githubusercontent.com/evanslight/kmlMelbourne/master/highLight_coast.kml";
+
+var map;
+var mapProp;
+var geoXml;
+var geoXmlDoc;
+
+//shopping mall
+var layerHighPoint;
+var layerchadstone;
+var layeremporium;
+var layeressendonDFO;
+var layersouthWarfDFO;
+
+
+var highPoint = [
+        {lat: -37.770806, lng: 144.886876},
+        {lat: -37.771349, lng: 144.891725},
+        {lat: -37.776302, lng: 144.891253},
+        {lat: -37.775691, lng: 144.885932}
+    ];
+
+var emporium = [
+        {lat: -37.812386, lng: 144.962488},
+        {lat: -37.811886, lng: 144.964344},
+        {lat: -37.812631, lng: 144.964623},
+        {lat: -37.813165, lng: 144.962885}
+    ];
+
+var chadstone = [
+        {lat: -37.886719, lng: 145.079743},
+        {lat: -37.884196, lng: 145.083973},
+        {lat: -37.888132, lng: 145.085923},
+        {lat: -37.887896, lng: 145.081277}
+    ];
+
+var essendonDFO = [
+        {lat: -37.734651, lng: 144.904502},
+        {lat: -37.732140, lng: 144.912892},
+        {lat: -37.732293, lng: 144.903236}
+    ];
+
+var southWarfDFO = [
+        {lat: -37.824945, lng: 144.948918},
+        {lat: -37.825792, lng: 144.948413},
+        {lat: -37.826072, lng: 144.949132},
+        {lat: -37.825115, lng: 144.949636}
+];
+
+function initialize()
+{
+
+   // Map style
+      var styles = [
+    {
+      stylers: [
+        { hue: "#00ffe6" },
+        { saturation: -20 }
+      ]
+    },{
+      featureType: "road",
+      elementType: "geometry",
+      stylers: [
+        { lightness: 100 },
+        { visibility: "simplified" }
+      ]
+    },{
+      featureType: "road",
+      elementType: "labels",
+      stylers: [
+        { visibility: "off" }
+      ]
+    }
+  ];
+
+  var styledMap = new google.maps.StyledMapType(styles,{name: "Styled Map"}); 
+
+  mapProp = {
+    center:myCenter,
+    zoom:12,
+    mapTypeId:google.maps.MapTypeId.ROADMAP
+    };
+
+  map=new google.maps.Map(document.getElementById("googleMap"),mapProp);
+  map.mapTypes.set('map_style', styledMap);
+  map.setMapTypeId('map_style');
+
+  geoXml = new geoXML3.parser({
+                   map: map,
+                   singleInfoWindow: true,
+                   suppressInfoWindows: true,
+                   zoom: 12,
+                   afterParse: useTheData
+               });
+               geoXml.parse(filename);
+
+
+}
+
+function addNormalKML()
+{
+    hideDocument_kml();
+    geoXml = new geoXML3.parser({
+                   map: map,
+                   singleInfoWindow: true,
+                   suppressInfoWindows: true,
+                   zoom: 12,
+                   afterParse: useTheData
+               });
+               geoXml.parse(filename);
+}
+
+function addHighLighKML()
+{
+    hideDocument_kml();
+    geoXml = new geoXML3.parser({
+                   map: map,
+                   singleInfoWindow: true,
+                   suppressInfoWindows: true,
+                   zoom: 12,
+                   afterParse: useTheData
+               });
+               geoXml.parse(filename_highLight);
+
+}
+
+function addShoppingMall()
+{
+  layerHighPoint = new google.maps.Polygon({
+    paths: highPoint,
+    strokeColor: '#FF0000',
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: '#FF0000',
+    fillOpacity: 0.35
+  });
+  layerHighPoint.setMap(map);
+
+  layeremporium = new google.maps.Polygon({
+    paths: emporium,
+    strokeColor: '#FF0000',
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: '#FF0000',
+    fillOpacity: 0.35
+  });
+  layeremporium.setMap(map);
+
+  layerchadstone = new google.maps.Polygon({
+    paths: chadstone,
+    strokeColor: '#FF0000',
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: '#FF0000',
+    fillOpacity: 0.35
+  });
+  layerchadstone.setMap(map);
+
+  layeressendonDFO = new google.maps.Polygon({
+    paths: essendonDFO,
+    strokeColor: '#FF0000',
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: '#FF0000',
+    fillOpacity: 0.35
+  });
+  layeressendonDFO.setMap(map);
+
+  layersouthWarfDFO = new google.maps.Polygon({
+    paths: southWarfDFO,
+    strokeColor: '#FF0000',
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: '#FF0000',
+    fillOpacity: 0.35
+  });
+  layersouthWarfDFO.setMap(map);
+
+}
+
+function removeShoppingMall()
+{
+    layerHighPoint.setMap(null);
+    layerchadstone.setMap(null);
+    layeremporium.setMap(null);
+    layeressendonDFO.setMap(null);
+    layersouthWarfDFO.setMap(null);
+
+    map.setCenter(myCenter);
+    map.setZoom(10);
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+function useTheData(doc){
+  var currentBounds = map.getBounds();
+  if (!currentBounds) currentBounds=new google.maps.LatLngBounds();
+
+  geoXmlDoc = doc[0];
+  for (var i = 0; i < geoXmlDoc.placemarks.length; i++) {
+
+    var placemark = geoXmlDoc.placemarks[i];
+    if (placemark.polygon) {
+
+      var normalStyle = {
+          strokeColor: placemark.polygon.get('strokeColor'),
+          strokeWeight: placemark.polygon.get('strokeWeight'),
+          strokeOpacity: placemark.polygon.get('strokeOpacity'),
+          fillColor: placemark.polygon.get('fillColor'),
+          fillOpacity: placemark.polygon.get('fillOpacity')
+          };
+      placemark.polygon.normalStyle = normalStyle;
+
+      highlightPoly(placemark.polygon);
+
+    }
+
+  }
+
+};
+
+
+var highlightOptions = {fillColor: "#A52A2A", strokeColor: "#000000", fillOpacity: 0.8, strokeWidth: 10};
+var highlightLineOptions = {strokeColor: "#FFFF00", strokeWidth: 10};
+
+function highlightPoly(poly) {
+  
+  google.maps.event.addListener(poly,"mouseover",function(event) {
+    if (poly instanceof google.maps.Polygon) {
+      poly.setOptions(highlightOptions);
+    } else if (poly instanceof google.maps.Polyline) {
+      poly.setOptions(highlightLineOptions);
+    };
+        
+  });
+  google.maps.event.addListener(poly,"mouseout",function() {
+    poly.setOptions(poly.normalStyle);
+    //remove detailed data from map
+    //infowindow.close();
+    //infowindow=null;
+  });
+
+}
+
+function hideDocument_kml(){
+
+            geoXml.hideDocument();  
+
+}
+
+function unhide_kml(){
+
+            geoXml.showDocument();  
+
+}
+
+function focusHighPoint()
+{
+  map.setCenter(new google.maps.LatLng(-37.773346, 144.888228));
+  map.setZoom(16);
+}
+
+function focusEmporim()
+{
+  map.setCenter(new google.maps.LatLng(-37.812528, 144.963614));
+  map.setZoom(18);
+}
+
+function focusChadsTone()
+{
+  map.setCenter(new google.maps.LatLng(-37.886385, 145.082832));
+  map.setZoom(17);
+}
+
+
+function focusEssendonDFO()
+{
+  map.setCenter(new google.maps.LatLng(-37.733242, 144.906666));
+  map.setZoom(16);
+}
+
+function focusSouthWarfDFO()
+{
+  map.setCenter(new google.maps.LatLng(-37.825418, 144.949196));
+  map.setZoom(18);
+}
+</script>
+</head>
+
+<script>
+function ShoppingMall()
+{
+  // alert(111);
+  document.getElementById("g1").style.visibility="visible";
+  document.getElementById("g2").style.visibility="hidden";
+  document.getElementById('iframeHere').innerHTML='<iframe src="shop_final.html" width="100%" height="1000px" style="border-width: 0px; border: soild;"></iframe>'; 
+}
+
+function COAST()
+{
+  document.getElementById("g2").style.visibility="visible";
+  document.getElementById("g1").style.visibility="hidden";
+  document.getElementById('iframeHere').innerHTML='<iframe src="coast_final.html" width="100%" height="1000px" style="border-width: 0px; border: soild;"></iframe>'; 
+}
+</script>
+
+<body>
+  <div style="width:100%; overflow: hidden;">
+<div id="googleMap" style="width:750px;height:450px;"></div>
+</div>
+<table><tr><td>
+
+    <br>
+    <button onclick="ShoppingMall()">ShoppingMall>></button>
+    <span id = "g1" style="visibility:hidden;">
+      <button onclick="addShoppingMall()">addMark</button>
+      <button onclick="removeShoppingMall()">removeMark</button>
+      <button onclick="focusHighPoint()">HighPoint</button>
+      <button onclick="focusEmporim()">Emporium</button>
+      <button onclick="focusChadsTone()">ChadsTone</button>
+      <button onclick="focusEssendonDFO()">EssendonDFO</button>
+      <button onclick="focusSouthWarfDFO()">CityfDFO</button>
+    </span><br><br>
+
+    <button onclick="COAST()">Coast>></button>
+    <span id = "g2" style="visibility:hidden;">
+      <button onclick="hideDocument_kml()">hideKML</button>
+      <button onclick="unhide_kml()">unhideKML</button>
+      <button onclick="addNormalKML()">addNormlKML</button>
+      <button onclick="addHighLighKML()">addHighLightKML</button>
+    </span>
+      </td></tr>
+    </table>
+    <span id = "iframeHere"></span>
+    
+</body>
+</html>
+

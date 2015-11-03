@@ -1,0 +1,507 @@
+<!-- Author: Hao DUAN<548771> Yu SUN <629341> -->
+<!-- Date: 30 Oct 2015 -->
+<!--This is to access a specific weather condition data-->
+<html>
+<head>
+  <meta charset="utf-8">
+<script type='text/javascript' src="share/ip.js"></script>
+</head>
+<body>
+    <div id="json333"></div>
+    <div id="main1" style="height:180px;width:800px;overflow:auto"> </div>
+    <div id="json222"></div>
+    <div id="main2" style="height:180px;width:800px;overflow:auto"> </div>
+    <div id="json111"></div>
+    <div id="main3" style="height:200px;width:800px;overflow:auto"> </div>
+<!--     <div id="main2" style="height:300px;width:800px;overflow:auto"> </div>
+    <div id="main3" style="height:300px;width:800px;overflow:auto"> </div> -->
+    <script src="http://echarts.baidu.com/build/dist/echarts-all.js"></script> 
+
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            $('#json333').ready(function () {
+
+               /* $.getJSON("http://www.hpgloe.com/json/getrec/?lat=37.234&lon=-122.234", {},
+                function (data) {
+                    //alert("here");
+                    alert(data);
+                }).fail(function (jqXHR, textStatus, errorThrown) { alert("fail " + errorThrown); });
+            */
+            
+            $.ajax({
+                      url: 'http://'+ip+'/coastshop/_design/mapreduce/_view/posi_aver?group_level=1',
+                      dataType: 'jsonp',
+                      type: 'get',
+                      success: function(data){
+                        var keylist       = new Array(data.rows.length);
+                        var percentage    = new Array(data.rows.length);
+
+                        for(i=0; i<data.rows.length;i++)
+                        {
+                            keylist[i] = data.rows[i].key;
+                        }
+
+                        for(i=0; i<data.rows.length;i++)
+                        {
+                            percentage[i] = data.rows[i].value[0].toFixed(3);
+                            percentage[i] = percentage[i]*100;
+                        }
+
+
+                        var labelTop = {
+                            normal : {
+                                label : {
+                                    show : true,
+                                    position : 'center',
+                                    formatter : '{b}',
+                                    textStyle: {
+                                        baseline : 'bottom'
+                                    }
+                                },
+                                labelLine : {
+                                    show : false
+                                }
+                            }
+                        };
+                        var labelFromatter = {
+                            normal : {
+                                label : {
+                                    formatter : function (params){
+                                        return 100 - params.value + '%'
+                                    },
+                                    textStyle: {
+                                        baseline : 'top'
+                                    }
+                                }
+                            },
+                        }
+                        var labelBottom = {
+                            normal : {
+                                color: '#ccc',
+                                label : {
+                                    show : true,
+                                    position : 'center'
+                                },
+                                labelLine : {
+                                    show : false
+                                }
+                            },
+                            emphasis: {
+                                color: 'rgba(0,0,0,0)'
+                            }
+                        };
+                        var radius = [40, 55];
+
+                        option = {
+                            legend: {
+                                x : 'center',
+                                y : 'bottom',
+                                data: keylist
+                            },
+                            title : {
+                                text: 'Weather Condition & Positive %',
+                                x: 'center'
+                            },
+                            toolbox: {
+                                show : true,
+                                feature : {
+                                    dataView : {show: true, readOnly: false},
+                                    magicType : {
+                                        show: true, 
+                                        type: ['pie', 'funnel'],
+                                        option: {
+                                            funnel: {
+                                                width: '20%',
+                                                height: '30%',
+                                                itemStyle : {
+                                                    normal : {
+                                                        label : {
+                                                            formatter : function (params){
+                                                                return 'other\n' + params.value + '%\n'
+                                                            },
+                                                            textStyle: {
+                                                                baseline : 'middle'
+                                                            }
+                                                        }
+                                                    },
+                                                } 
+                                            }
+                                        }
+                                    },
+                                    // restore : {show: true},
+                                    saveAsImage : {show: true}
+                                }
+                            },
+                            series : [
+                                {
+                                    type : 'pie',
+                                    center : ['10%', '50%'],
+                                    radius : radius,
+                                    x: '0%', // for funnel
+                                    itemStyle : labelFromatter,
+                                    data : [
+                                        {name:'other', value: 100-percentage[0], itemStyle : labelBottom},
+                                        {name: keylist[0], value: percentage[0] ,itemStyle : labelTop}
+                                    ]
+                                },
+                                {
+                                    type : 'pie',
+                                    center : ['30%', '50%'],
+                                    radius : radius,
+                                    x:'20%', // for funnel
+                                    itemStyle : labelFromatter,
+                                    data : [
+                                        {name:'other', value: 100-percentage[1], itemStyle : labelBottom},
+                                        {name: keylist[1], value: percentage[1] ,itemStyle : labelTop}
+                                    ]
+                                },
+                                {
+                                    type : 'pie',
+                                    center : ['50%', '50%'],
+                                    radius : radius,
+                                    x:'40%', // for funnel
+                                    itemStyle : labelFromatter,
+                                    data : [
+                                        {name:'other', value: 100-percentage[2], itemStyle : labelBottom},
+                                        {name: keylist[2], value: percentage[2] ,itemStyle : labelTop}
+                                    ]
+                                },
+                                {
+                                    type : 'pie',
+                                    center : ['70%', '50%'],
+                                    radius : radius,
+                                    x:'60%', // for funnel
+                                    itemStyle : labelFromatter,
+                                    data : [
+                                        {name:'other', value: 100-percentage[3], itemStyle : labelBottom},
+                                        {name: keylist[3], value: percentage[3] ,itemStyle : labelTop}
+                                    ]
+                                },
+                                {
+                                    type : 'pie',
+                                    center : ['90%', '50%'],
+                                    radius : radius,
+                                    x:'80%', // for funnel
+                                    itemStyle : labelFromatter,
+                                    data : [
+                                        {name:'other', value: 100-percentage[4], itemStyle : labelBottom},
+                                        {name: keylist[4], value: percentage[4] ,itemStyle : labelTop}
+                                    ]
+                                }
+                            ]
+                        };
+                        var myChart = echarts.init(document.getElementById('main1'));
+                        myChart.setOption(option);
+
+                      
+
+                        setTimeout(function (){
+                            window.onresize = function () {
+                                myChart.resize();
+                                // myChart2.resize();
+                                // myChart3.resize();
+                            }
+                        },200)
+
+                      }
+                    });
+                    });
+
+
+
+        });
+    </script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            $('#json222').ready(function () {
+
+               /* $.getJSON("http://www.hpgloe.com/json/getrec/?lat=37.234&lon=-122.234", {},
+                function (data) {
+                    //alert("here");
+                    alert(data);
+                }).fail(function (jqXHR, textStatus, errorThrown) { alert("fail " + errorThrown); });
+            */
+            
+            $.ajax({
+                      url: 'http://115.146.86.188:5984/coastshop/_design/mapreduce/_view/nega_aver?group_level=1',
+                      dataType: 'jsonp',
+                      type: 'get',
+                      success: function(data){
+                        var keylist       = new Array(data.rows.length);
+                        var percentage    = new Array(data.rows.length);
+
+                        for(i=0; i<data.rows.length;i++)
+                        {
+                            keylist[i] = data.rows[i].key;
+                        }
+
+                        for(i=0; i<data.rows.length;i++)
+                        {
+                            percentage[i] = data.rows[i].value[0].toFixed(2);
+                            percentage[i] = percentage[i]*100;
+                        }
+
+
+                        var labelTop = {
+                            normal : {
+                                label : {
+                                    show : true,
+                                    position : 'center',
+                                    formatter : '{b}',
+                                    textStyle: {
+                                        baseline : 'bottom'
+                                    }
+                                },
+                                labelLine : {
+                                    show : false
+                                }
+                            }
+                        };
+                        var labelFromatter = {
+                            normal : {
+                                label : {
+                                    formatter : function (params){
+                                        return 100 - params.value + '%'
+                                    },
+                                    textStyle: {
+                                        baseline : 'top'
+                                    }
+                                }
+                            },
+                        }
+                        var labelBottom = {
+                            normal : {
+                                color: '#ccc',
+                                label : {
+                                    show : true,
+                                    position : 'center'
+                                },
+                                labelLine : {
+                                    show : false
+                                }
+                            },
+                            emphasis: {
+                                color: 'rgba(0,0,0,0)'
+                            }
+                        };
+                        var radius = [40, 55];
+
+                        option = {
+                            legend: {
+                                x : 'center',
+                                y : 'bottom',
+                                data: keylist
+                            },
+                            title : {
+                                text: 'Weather Condition & Negative %',
+                                x: 'center'
+                            },
+                            toolbox: {
+                                show : true,
+                                feature : {
+                                    dataView : {show: true, readOnly: false},
+                                    magicType : {
+                                        show: true, 
+                                        type: ['pie', 'funnel'],
+                                        option: {
+                                            funnel: {
+                                                width: '20%',
+                                                height: '30%',
+                                                itemStyle : {
+                                                    normal : {
+                                                        label : {
+                                                            formatter : function (params){
+                                                                return 'other\n' + params.value + '%\n'
+                                                            },
+                                                            textStyle: {
+                                                                baseline : 'middle'
+                                                            }
+                                                        }
+                                                    },
+                                                } 
+                                            }
+                                        }
+                                    },
+                                    // restore : {show: true},
+                                    saveAsImage : {show: true}
+                                }
+                            },
+                            series : [
+                                {
+                                    type : 'pie',
+                                    center : ['10%', '50%'],
+                                    radius : radius,
+                                    x: '0%', // for funnel
+                                    itemStyle : labelFromatter,
+                                    data : [
+                                        {name:'other', value: 100-percentage[0], itemStyle : labelBottom},
+                                        {name: keylist[0], value: percentage[0] ,itemStyle : labelTop}
+                                    ]
+                                },
+                                {
+                                    type : 'pie',
+                                    center : ['30%', '50%'],
+                                    radius : radius,
+                                    x:'20%', // for funnel
+                                    itemStyle : labelFromatter,
+                                    data : [
+                                        {name:'other', value: 100-percentage[1], itemStyle : labelBottom},
+                                        {name: keylist[1], value: percentage[1] ,itemStyle : labelTop}
+                                    ]
+                                },
+                                {
+                                    type : 'pie',
+                                    center : ['50%', '50%'],
+                                    radius : radius,
+                                    x:'40%', // for funnel
+                                    itemStyle : labelFromatter,
+                                    data : [
+                                        {name:'other', value: 100-percentage[2], itemStyle : labelBottom},
+                                        {name: keylist[2], value: percentage[2] ,itemStyle : labelTop}
+                                    ]
+                                },
+                                {
+                                    type : 'pie',
+                                    center : ['70%', '50%'],
+                                    radius : radius,
+                                    x:'60%', // for funnel
+                                    itemStyle : labelFromatter,
+                                    data : [
+                                        {name:'other', value: 100-percentage[3], itemStyle : labelBottom},
+                                        {name: keylist[3], value: percentage[3] ,itemStyle : labelTop}
+                                    ]
+                                },
+                                {
+                                    type : 'pie',
+                                    center : ['90%', '50%'],
+                                    radius : radius,
+                                    x:'80%', // for funnel
+                                    itemStyle : labelFromatter,
+                                    data : [
+                                        {name:'other', value: 100-percentage[4], itemStyle : labelBottom},
+                                        {name: keylist[4], value: percentage[4] ,itemStyle : labelTop}
+                                    ]
+                                }
+                            ]
+                        };
+                        var myChart = echarts.init(document.getElementById('main2'));
+                        myChart.setOption(option);
+
+                      
+
+                        setTimeout(function (){
+                            window.onresize = function () {
+                                myChart.resize();
+                                // myChart2.resize();
+                                // myChart3.resize();
+                            }
+                        },200)
+
+                      }
+                    });
+                    });
+
+
+
+        });
+    </script>
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            $('#json111').ready(function () {
+
+               /* $.getJSON("http://www.hpgloe.com/json/getrec/?lat=37.234&lon=-122.234", {},
+                function (data) {
+                    //alert("here");
+                    alert(data);
+                }).fail(function (jqXHR, textStatus, errorThrown) { alert("fail " + errorThrown); });
+            */
+            
+            $.ajax({
+                      url: 'http://115.146.86.188:5984/coastshop/_design/mapreduce/_view/tweet_average?group_level=1',
+                      dataType: 'jsonp',
+                      type: 'get',
+                      success: function(data){
+                        var keylist       = new Array(data.rows.length);
+                        var percentage    = new Array(data.rows.length);
+
+                        for(i=0; i<data.rows.length;i++)
+                        {
+                            keylist[i] = data.rows[i].key;
+                        }
+
+                        for(i=0; i<data.rows.length;i++)
+                        {
+                            percentage[i] = data.rows[i].value[0].toFixed(0);
+                        }
+
+
+                     option = {
+                         title : {
+                             text: 'Tweets Number & Weather Condition',
+                             x: 'center'
+                         },
+                         tooltip : {
+                             trigger: 'axis'
+                         },
+                         legend: {
+                            x : 'bottom',
+                            y : 'bottom',
+                             data:keylist
+                         },
+
+                         calculable : true,
+                         xAxis : [
+                             {
+                                 type : 'category',
+                                 data : keylist
+                             }
+                         ],
+                         yAxis : [
+                             {
+                                 type : 'value'
+                             }
+                         ],
+                         series : [
+                             {
+                                 name:'Tweets Number',
+                                 type:'bar',
+                                 data:percentage,
+                                itemStyle: {
+                                    normal: {
+                                        color:  '#7b68ee',
+                                        lineStyle: {        // 系列级个性化折线样式
+                                            width: 2
+                                        }
+                                    }
+                                }
+                             }
+                         ]
+                     };
+                        var myChart = echarts.init(document.getElementById('main3'));
+                        myChart.setOption(option);
+
+                      
+
+                        setTimeout(function (){
+                            window.onresize = function () {
+                                myChart.resize();
+                                // myChart2.resize();
+                                // myChart3.resize();
+                            }
+                        },200)
+
+                      }
+                    });
+                    });
+
+
+
+        });
+    </script>
+</body>
+</html>

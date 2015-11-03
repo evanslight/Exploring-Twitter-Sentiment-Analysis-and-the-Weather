@@ -1,0 +1,589 @@
+<!-- Author: Hao DUAN<548771> Yu SUN <629341> -->
+<!-- Date: 30 Oct 2015 -->
+<!-- This page is to access the coast suburbs data-->
+<html>
+<head>
+  <meta charset="utf-8">
+
+<script type='text/javascript' src="share/ip.js"></script>
+</head>
+<body>
+    <div id="json333"></div>
+    <div id="main1" style="height:200px;width:800px;overflow:auto"> </div>
+    <div id="main2" style="height:200px;width:800px;overflow:auto"> </div>
+    <div id="main3" style="height:200px;width:800px;overflow:auto"> </div>
+    <div id="main4" style="height:100px;width:800px;overflow:auto"> </div>
+    <script src="http://echarts.baidu.com/build/dist/echarts-all.js"></script> 
+
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    
+    <script>
+    </script>
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#json333').ready(function () {
+
+               /* $.getJSON("http://www.hpgloe.com/json/getrec/?lat=37.234&lon=-122.234", {},
+                function (data) {
+                    //alert("here");
+                    alert(data);
+                }).fail(function (jqXHR, textStatus, errorThrown) { alert("fail " + errorThrown); });
+            */
+            
+            $.ajax({
+                      url: 'http://'+ip+'/coastshop/_design/mapreduce/_view/region',
+                      dataType: 'jsonp',
+                      type: 'get',
+                      success: function(data){
+                        var axisData       = new Array(data.rows.length/3);
+                        var high           = new Array(data.rows.length/3);
+                        var low            = new Array(data.rows.length/3);
+
+                        var coast_positive = new Array(data.rows.length/3);
+                        var coast_netrual  = new Array(data.rows.length/3);
+                        var coast_negative = new Array(data.rows.length/3);                        
+                        var coast_tweets   = new Array(data.rows.length/3);
+
+                        var other_positive = new Array(data.rows.length/3);
+                        var other_netrual  = new Array(data.rows.length/3);
+                        var other_negative = new Array(data.rows.length/3);                        
+                        var other_tweets   = new Array(data.rows.length/3);
+
+                        var shop_positive = new Array(data.rows.length/3);
+                        var shop_netrual  = new Array(data.rows.length/3);
+                        var shop_negative = new Array(data.rows.length/3);                        
+                        var shop_tweets   = new Array(data.rows.length/3);
+
+                        var numberratio   = new Array(data.rows.length/3);
+                        var shopnumberR   = new Array(data.rows.length/3);
+                        var coast_positiveR= new Array(data.rows.length/3);
+                        var coast_negativeR= new Array(data.rows.length/3);      
+
+                        var j;                  
+
+
+                        for(i=0; i<data.rows.length;i++)
+                        {
+                            if(data.rows[i].key=='coast')
+                            {
+                                  axisData[i]=data.rows[i].value[0];
+                                  coast_positive[i]=(data.rows[i].value[1]*100).toFixed(2);
+                                  coast_netrual[i] =(data.rows[i].value[2]*100).toFixed(2);
+                                  coast_negative[i]=(data.rows[i].value[3]*100).toFixed(2);
+                                  high[i]    =data.rows[i].value[4];
+                                  low[i]     =data.rows[i].value[5];
+                                  coast_tweets[i]  =data.rows[i].value[7];
+                            }
+                            else if(data.rows[i].key=='other')
+                            {
+                                  j = i-data.rows.length/3;
+                                  other_positive[j]=(data.rows[i].value[1]*100).toFixed(2);
+                                  other_netrual[j] =(data.rows[i].value[2]*100).toFixed(2);
+                                  other_negative[j]=(data.rows[i].value[3]*100).toFixed(2);
+                                  other_tweets[j]  =data.rows[i].value[7];
+                            }
+
+                        }
+
+                        for(i=0; i<data.rows.length/3;i++)
+                        {
+                            numberratio[i]   =  (coast_tweets[i]/(other_tweets[i])*100).toFixed(2);
+                            coast_positiveR[i]= (coast_positive[i]/other_positive[i]).toFixed(2);
+                            coast_negativeR[i]= (coast_negative[i]/other_negative[i]).toFixed(2);
+
+                        }
+
+
+                        option = {
+                            title : {
+                                text: 'Coast'
+                            },
+                            tooltip : {
+                                trigger: 'axis',
+                                showDelay: 10,             // 显示延迟，添加显示延迟可以避免频繁切换，单位ms
+                                formatter: function (params) {
+                                    var res = params[0].name;
+                                    res += '<br/>' + 'Emotion Percentage';
+                                    res += '<br/>  coast_positiveR : ' + params[0].value;
+                                    res += '<br/>  coast_negativeR : ' + params[1].value;
+                                    // res += '<br/>  Negative : ' + params[2].value;
+                                    return res;
+                                }
+                            },
+                            legend: {
+                                data:['coast_positiveR','coast_negativeR','High','Low','numberratio','coast_positive']
+                            },
+                            toolbox: {
+                                show : true,
+                                feature : {
+                                    magicType : {show: true, type: ['line', 'bar']},
+                                    restore : {show: true},
+                                    saveAsImage : {show: true}
+                                }
+                            },
+                            dataZoom : {
+                                y: 250,
+                                show : true,
+                                realtime: true,
+                                start : 50,
+                                end : 100
+                            },
+                            grid: {
+                                x: 80,
+                                y: 40,
+                                x2:20,
+                                y2:25
+                            },
+                            xAxis : [
+                                {
+                                    type : 'category',
+                                    boundaryGap : true,
+                                    axisTick: {onGap:false},
+                                    splitLine: {show:false},
+                                    data : axisData
+                                }
+                            ],
+                            yAxis : [
+                                {
+                                    type : 'value',
+                                    axisLabel : {
+                                        formatter: '{value}'
+                                    }
+                                }
+                            ],
+                            series : [
+                            {
+                                name:'coast_positiveR',
+                                type:'line',
+                                smooth:true,  
+                                itemStyle: {
+                                    normal: {
+                                        color:  '#ffd700' ,
+                                        lineStyle: {        // 系列级个性化折线样式
+                                            width: 2
+                                        }
+                                    }
+                                },
+                                data: coast_positiveR,
+                                markPoint : {
+                                    data : [
+                                        {type : 'max', name: 'max'},
+                                        {type : 'min', name: 'min'}
+                                    ]
+                                },
+                                markLine : {
+                                    data : [
+                                        {type : 'average', name: 'average'}
+                                    ]
+                                }
+                            },
+                            {
+                                name:'coast_negativeR',
+                                type:'line',
+                                smooth:true,  
+                                itemStyle: {
+                                    normal: {
+                                        color:  '#7b68ee',
+                                        lineStyle: {        // 系列级个性化折线样式
+                                            width: 2
+                                        }
+                                    }
+                                },
+                                data: coast_negativeR,
+                                markPoint : {
+                                    data : [
+                                        {type : 'max', name: 'max'},
+                                        {type : 'min', name: 'min'}
+                                    ]
+                                },
+                                markLine : {
+                                    data : [
+                                        {type : 'average', name: 'average'}
+                                    ]
+                                }
+                            },
+                            {
+                                name:'High',
+                                type:'line',
+                                symbol: 'none',
+                                data:[]
+                            },
+                            {
+                                name:'Low',
+                                type:'line',
+                                data:[]
+                            },
+                            {
+
+                                name:'numberratio',
+                                type:'line',
+                                data:[]
+                            },
+                            {
+                                name:'coast_positive',
+                                type:'bar',
+                                data:[]
+                            }                               
+                            ]
+                        };
+                        var myChart = echarts.init(document.getElementById('main1'));
+                        myChart.setOption(option);
+
+                        option2 = {
+                            tooltip : {
+                                trigger: 'axis',
+                                showDelay: 10,             // 显示延迟，添加显示延迟可以避免频繁切换，单位ms
+                                formatter: function (params) {
+                                    var res = params[0].name;
+                                    res += '<br/>' + 'Temprature';
+                                    res += '<br/>  High : ' + params[0].value;
+                                    res += '<br/>  Low : ' + params[1].value;                                    
+                                    return res;
+                                }
+                            },
+                            legend: {
+                                y : -30,
+                                data:['coast_positiveR','coast_negativeR','High','Low','numberratio','coast_positive']
+                            },
+                            toolbox: {
+                                y : -30,
+                                show : true,
+                                feature : {
+                                    mark : {show: true},
+                                    dataZoom : {show: true},
+                                    dataView : {show: true, readOnly: false},
+                                    magicType : {show: true, type: ['line', 'bar']},
+                                    restore : {show: true},
+                                    saveAsImage : {show: true}
+                                }
+                            },
+                            dataZoom : {
+                                show : true,
+                                realtime: true,
+                                start : 50,
+                                end : 100
+                            },
+                            grid: {
+                                x: 80,
+                                y:5,
+                                x2:20,
+                                y2:40
+                            },
+                            xAxis : [
+                                {
+                                    type : 'category',
+                                    position:'top',
+                                    boundaryGap : true,
+                                    axisLabel:{show:false},
+                                    axisTick: {onGap:false},
+                                    splitLine: {show:false},
+                                    data : axisData
+                                }
+                            ],
+                            yAxis : [
+                                {
+                                    type : 'value',
+                                    axisLabel : {
+                                        formatter: '{value} °C'
+                                    }
+                                }
+                            ],
+                            series : [
+                                {
+                                    name:'High',
+                                    type:'line',
+                                    symbol: 'none',
+                                    smooth:true,  
+                                    itemStyle: {
+                                        normal: {
+                                            color:  '#ff69b4',
+                                            lineStyle: {        // 系列级个性化折线样式
+                                                width: 2
+                                            }
+                                        }
+                                    },
+                                    data:high,
+                                    markPoint : {
+                                        data : [
+                                            {type : 'max', name: 'max'},
+                                            {type : 'min', name: 'min'}
+                                        ]
+                                    },
+                                    markLine : {
+                                        symbol : 'none',
+                                        itemStyle : {
+                                            normal : {
+                                                color:'#1e90ff',
+                                                label : {
+                                                    show:false
+                                                }
+                                            }
+                                        },
+                                        data : [
+                                            {type : 'average', name: 'average'}
+                                        ]
+                                    }
+                                },
+                                {
+                                    name:'Low',
+                                    type:'line',
+                                    symbol: 'none',
+                                    smooth:true,  
+                                    itemStyle: {
+                                        normal: {
+                                            color:  '#87cefa',
+                                            lineStyle: {        // 系列级个性化折线样式
+                                                width: 2
+                                            }
+                                        }
+                                    },
+                                    data: low,
+                                    markPoint : {
+                                        data : [
+                                            {type : 'max', name: 'max'},
+                                            {type : 'min', name: 'min'}
+                                        ]
+                                    },
+                                    markLine : {
+                                        symbol : 'none',
+                                        itemStyle : {
+                                            normal : {
+                                                color:'#1e90ff',
+                                                label : {
+                                                    show:false
+                                                }
+                                            }
+                                        },
+                                        data : [
+                                            {type : 'average', name: 'average'}
+                                        ]
+                                    }
+                                }
+                            ]
+                        };
+                        var myChart2 = echarts.init(document.getElementById('main2'));
+                        myChart2.setOption(option2);
+
+                        option3 = {
+                            tooltip : {
+                                trigger: 'axis',
+                                showDelay: 10,             // 显示延迟，添加显示延迟可以避免频繁切换，单位ms
+                                formatter: function (params) {
+                                    var res = params[0].name;
+                                    res += '<br/>  numberratio: ' + params[0].value;                              
+                                    return res;
+                                }
+                            },
+                            legend: {
+                                y : -30,
+                                data:['coast_positiveR','coast_negativeR','High','Low','numberratio','coast_positive']
+                            },
+                            toolbox: {
+                                y : -30,
+                                show : true,
+                                feature : {
+                                    mark : {show: true},
+                                    dataZoom : {show: true},
+                                    dataView : {show: true, readOnly: false},
+                                    magicType : {show: true, type: ['line', 'bar']},
+                                    restore : {show: true},
+                                    saveAsImage : {show: true}
+                                }
+                            },
+                            dataZoom : {
+                                y:200,
+                                show : true,
+                                realtime: true,
+                                start : 50,
+                                end : 100
+                            },
+                            grid: {
+                                x: 80,
+                                y:5,
+                                x2:20,
+                                y2:30
+                            },
+                            xAxis : [
+                                {
+                                    type : 'category',
+                                    position:'bottom',
+                                    boundaryGap : true,
+                                    axisTick: {onGap:false},
+                                    splitLine: {show:false},
+                                    data : axisData
+                                }
+                            ],
+                            yAxis : [
+                                {
+                                    type : 'value',
+                                    axisLabel : {
+                                        formatter: '{value} %'
+                                    }
+                                }
+                            ],
+                            series : [
+                                {
+                                    name:'numberratio',
+                                    type:'line',
+                                    symbol: 'none',
+                                    smooth:true,  
+                                    itemStyle: {
+                                        normal: {
+                                            color:  '#ff7f50',
+                                            lineStyle: {        // 系列级个性化折线样式
+                                                width: 2
+                                                
+                                            }
+                                        },
+                                        emphasis: {
+                                            color: '#1e90ff'
+                                        }
+                                    },
+                                    data: numberratio,
+                                    markPoint : {
+                                        data : [
+                                            {type : 'max', name: 'max'},
+                                            {type : 'min', name: 'min'}
+                                        ]
+                                    },
+                                    markLine : {
+                                        symbol : 'none',
+                                        itemStyle : {
+                                            normal : {
+                                                color:'#1e90ff',
+                                                label : {
+                                                    show:false
+                                                }
+                                            }
+                                        },
+                                        data : [
+                                            {type : 'average', name: 'average'}
+                                        ]
+                                    }
+                                }
+                            ]
+                        };
+                       var  myChart3 = echarts.init(document.getElementById('main3'));
+                        myChart3.setOption(option3);
+
+                         option4 = {
+                             tooltip : {
+                                 trigger: 'axis',
+                                 showDelay: 10,             // 显示延迟，添加显示延迟可以避免频繁切换，单位ms
+                                 formatter: function (params) {
+                                     var res = params[0].name;
+                                     res += '<br/>  coast_positive: ' + params[0].value;                              
+                                     return res;
+                                 }
+                             },
+                             legend: {
+                                 y : -30,
+                                 data:['coast_positiveR','coast_negativeR','High','Low','numberratio','coast_positive']
+                             },
+                             toolbox: {
+                                 y : -30,
+                                 show : true,
+                                 feature : {
+                                     mark : {show: true},
+                                     dataZoom : {show: true},
+                                     dataView : {show: true, readOnly: false},
+                                     magicType : {show: true, type: ['line', 'bar']},
+                                     restore : {show: true},
+                                     saveAsImage : {show: true}
+                                 }
+                             },
+                             dataZoom : {
+                                 y:200,
+                                 show : true,
+                                 realtime: true,
+                                 start : 50,
+                                 end : 100
+                             },
+                             grid: {
+                                 x: 80,
+                                 y:5,
+                                 x2:20,
+                                 y2:30
+                             },
+                             xAxis : [
+                                 {
+                                     type : 'category',
+                                     position:'bottom',
+                                     boundaryGap : true,
+                                     axisTick: {onGap:false},
+                                     splitLine: {show:false},
+                                     data : axisData
+                                 }
+                             ],
+                             yAxis : [
+                                 {
+                                     type : 'value',
+                                     axisLabel : {
+                                         formatter: '{value}'
+                                     }
+                                 }
+                             ],
+                             series : [
+                                 {
+                                     name:'coast_positive',
+                                     type:'bar',
+                                     symbol: 'none',
+                                     smooth:true,  
+                                     itemStyle: {
+                                         normal: {
+                                             color:  '#cd5c5c',
+                                             lineStyle: {        // 系列级个性化折线样式
+                                                 width: 2                                               
+                                             }
+                                         },
+                                         emphasis: {
+                                             color: '#1e90ff'
+                                         }
+                                     },
+                                     data: coast_positive,
+
+                                     markLine : {
+                                         symbol : 'none',
+                                         itemStyle : {
+                                             normal : {
+                                                 color:'#1e90ff',
+                                                 label : {
+                                                     show:true
+                                                 }
+                                             }
+                                         },
+                                         data : [
+                                             {type : 'average', name: 'average'}
+                                         ]
+                                     }
+                                 }
+                             ]
+                         };
+                        var  myChart4 = echarts.init(document.getElementById('main4'));
+                         myChart4.setOption(option4);
+
+                        myChart.connect([myChart2, myChart3,myChart4]);
+                        myChart2.connect([myChart, myChart3,myChart4]);
+                        myChart3.connect([myChart, myChart2,myChart4]);
+                        myChart4.connect([myChart, myChart2,myChart3]);
+
+                        setTimeout(function (){
+                            window.onresize = function () {
+                                myChart.resize();
+                                myChart2.resize();
+                                myChart3.resize();
+                            }
+                        },200)
+
+                      }
+                    });
+                    });
+
+
+
+        });
+    </script>
+</body>
+</html>

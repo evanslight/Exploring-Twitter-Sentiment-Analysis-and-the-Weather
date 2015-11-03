@@ -1,0 +1,7 @@
+[program:TweetFetching_8cities]
+command=/bin/bash /home/ubuntu/tweetgetter/TweetFetching_8cities.sh
+directory=/home/ubuntu/tweetgetter
+autostart=true
+autorestart=true
+stderr_logfile=/home/ubuntu/tweetgetter/TweetFetching_8cities.err.log
+stdout_logfile=/home/ubuntu/tweetgetter/TweetFetching_8cities.out.log

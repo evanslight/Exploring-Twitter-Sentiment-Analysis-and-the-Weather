@@ -1,0 +1,170 @@
+#######################################################################
+# Author: Hao DUAN<548771> Yu SUN<629341>  
+# Date: 30 Oct 2015                        
+# File Name: playbook.yml
+# Description : This program is used to deployed the system
+#######################################################################
+
+- hosts: serverHost
+  sudo: yes
+  sudo_user: root
+  tasks:
+    - name: update
+      apt: update_cache=yes
+
+#mount the volume to the instance
+    - name: create a directory data
+      file: path=/mnt/data state=directory
+    - name: create a directory Database
+      file: path=/mnt/data/Database state=directory
+    - name: format disk as ext4
+      filesystem: fstype=ext4 dev=/dev/vdc
+    - name: mount volume
+      mount: name=/mnt/data/ src=/dev/vdc fstype=ext4 state=mounted
+
+# install all the python-package, python and pip
+    - name: Install python
+      apt: pkg=python state=latest
+    - name: install pip
+      apt: pkg=python-pip state=latest
+    - name: install nltk via pip
+      pip: name=nltk
+    - name: install python-package via apt
+      apt: pkg={{ item }} state=latest
+      with_items:
+       - python-numpy
+       - python-scipy
+       - libblas-dev
+       - liblapack-dev
+       - gfortran
+       - python-matplotlib
+       - libfreetype6-dev
+       - libpng12-dev
+       - tk
+       - python-qt4
+       - python-gtk2
+       - python-wxgtk2.8
+       - librsvg2-common
+       - texlive-latex-extra
+       - texlive-extra-utils
+       - libffi-dev
+       - libssl-dev
+       - python-pandas
+       - python-sympy
+       - python-nose
+    - name: upgrade Numpy via pip
+      pip: name=numpy state=latest
+    - name: Install tweepy pattern shapely sslscurity couchdb
+      pip: name= {{ item }}
+      with_items:
+       - tweepy
+       - pattern
+       - shapely
+       - pyopenssl
+       - ndg-httpsclient
+       - pyasn
+       - couchdb
+       - python-forecastio
+       - couchquery
+       - scikit-learn
+    - name: Upgrade the scikit-learn
+      pip: name=scikit-learn state=latest
+
+# install needed application
+    - name: Install apache2
+      apt: pkg=apache2 state=latest
+    - name: Install php5
+      apt: pkg=php5 state=latest
+    - name: Install wordpress
+      apt: pkg=wordpress state=latest
+    - name: Install couchDB
+      apt: pkg=couchdb state=latest
+    - name: Install python-couchDB
+      apt: pkg=python-couchdb state=latest
+    - name: Install java
+      apt: pkg=openjdk-7-jre-headless state=latest
+    - name: Install make
+      apt: pkg=make
+    - name: Install Supervisor
+      command: easy_install supervisor
+    - name: Install vim
+      apt: pkg=vim state=latest
+    - name: Get verx
+      command: > 
+          wget http://dl.bintray.com/vertx/downloads/vert.x-2.1.5.tar.gz
+          creates=vert.x-2.1.5.tar.gz
+    - name: Unpack verx
+      command: > 
+          tar xzf vert.x-2.1.5.tar.gz
+          creates=vert.x-2.1.5
+    - name: Install verx
+      shell: > 
+          ./configure && make;
+          ldconfig
+          chdir=vert.x-2.1.5
+    - name: Install curl
+      apt: pkg=curl state=latest
+
+# change the config of couchdb and apache2
+    - name: change port number
+      lineinfile: dest=/etc/couchdb/local.ini
+                  regexp='^;port'
+                  insertafter="[httpd]"
+                  line="port = 5984"
+    - name: change bind_address
+      lineinfile: dest=/etc/couchdb/local.ini
+                  regexp='^;bind_address'
+                  insertafter="port"
+                  line="bind_address = 0.0.0.0"
+    - name: add directory for directory
+      lineinfile: dest=/etc/couchdb/local.ini
+                  regexp="^database_dir"
+                  insertafter="^uuid"
+                  line="database_dir = /mnt/data/Database/couchdb\nview_index_dir = /mnt/data/Database/couchdb"
+    - name: write access directory in alias
+      lineinfile: dest=/etc/apparmor.d/tunables/alias
+                  regexp=''
+                  insertafter=EOF
+                  line="alias /var/lib/couchdb/ -> /mnt/data/Database/couchdb/,"
+    - name: create a directory Database
+      file: path=/mnt/data/Database state=directory
+    - name: copy couchdb directory
+      shell: cp -R -p /var/lib/couchdb/ /mnt/data/Database/couchdb
+    - name: Change PATH for vertx
+      shell: >
+          PATH=$PATH:/home/ubuntu/vert.x-2.1.5/bin
+    - name: change apache2 config
+      lineinfile: dest=/etc/apache2/apache2.conf
+                  regexp=''
+                  insertafter=EOF
+                  line="ServerName localhost\nDirectoryIndex index.html index.htm index.php"
+    - name: Configure Supervisor
+      shell: echo_supervisord_conf > /home/ubuntu/supervisord.conf
+    - name: change config file of supervisord
+      lineinfile: dest=/home/ubuntu/supervisord.conf
+                  regexp=''
+                  insertafter=EOF
+                  line="[program:new_york_harvester_historical]\ncommand=/home/ubuntu/vertx/bin/vertx runzip /home/ubuntu/NYHarvester-0.2-mod.zip -conf /home/ubuntu/scott_h.json\nstdout_logfile=/home/ubuntu/new_york_harvester_historical.out.log\nstderr_logfile=/home/ubuntu/new_york_harvester_historical.err.log\n\n[program:new_york_harvester_latest]\ncommand=/home/ubuntu/vertx/bin/vertx runzip /home/ubuntu/NYHarvester-0.2-mod.zip -conf /home/ubuntu/scott_l.json\nstdout_logfile=/home/ubuntu/new_york_harvester_latest.out.log\nstderr_logfile=/home/ubuntu/new_york_harvester_latest.err.log"
+    - name: restart a service couchdb
+      service: name=couchdb state=restarted
+    - name: restart a service apache2
+      service: name=apache2 state=restarted
+
+#get PHP-on-Couch
+    - name: Get couch.php
+      command: > 
+          wget https://github.com/dready92/PHP-on-Couch/blob/master/lib/couch.php
+    - name: Get couchAdmin.php
+      command: >   
+          wget https://github.com/dready92/PHP-on-Couch/blob/master/lib/couchAdmin.php
+    - name: Get couchDocument.php
+      command: > 
+          wget https://github.com/dready92/PHP-on-Couch/blob/master/lib/couchDocument.php
+    - name: Get couchClient.php
+      command: > 
+          wget https://github.com/dready92/PHP-on-Couch/blob/master/lib/couchClient.php
+    - name: Get couchReplicator.php
+      command: > 
+          wget https://github.com/dready92/PHP-on-Couch/blob/master/lib/couchReplicator.php
+
+

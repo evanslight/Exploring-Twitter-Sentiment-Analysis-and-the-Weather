@@ -1,0 +1,23 @@
+#######################################################################
+# Author: Hao DUAN<548771> Yu SUN<629341>  
+# Date: 30 Oct 2015                        
+# File Name: EXAMPLE
+# Description :  This is to illustrate how to build your conf file
+#######################################################################
+
+# define a program name
+[program:TweetFetching_8cities]
+
+# define the direction of shell location
+command=/bin/bash /home/ubuntu/tweetgetter/TweetFetching_8cities.sh
+
+# define the location of out put file and err file location
+directory=/home/ubuntu/tweetgetter
+
+# define restart or not if error
+autostart=true
+autorestart=true
+
+# define the location of two-typed output file
+stderr_logfile=/home/ubuntu/tweetgetter/TweetFetching_8cities.err.log
+stdout_logfile=/home/ubuntu/tweetgetter/TweetFetching_8cities.out.log

@@ -1,0 +1,446 @@
+<!-- Author: Hao DUAN<548771> Yu SUN <629341> -->
+<!-- Date: 30 Oct 2015 -->
+<!-- Thie page is to access the adelaide data to present in graphs-->
+<html>
+<head>
+  <meta charset="utf-8">
+<script type='text/javascript' src="../share/ip.js"></script>
+</head>
+<body>
+    <div id="json333"></div>
+    <div id="main1" style="height:200px;width:800px;overflow:auto"> </div>
+    <div id="main2" style="height:200px;width:800px;overflow:auto"> </div>
+    <div id="main3" style="height:100px;width:800px;overflow:auto"> </div>
+    <script src="http://echarts.baidu.com/build/dist/echarts-all.js"></script> 
+
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            $('#json333').ready(function () {
+
+               /* $.getJSON("http://www.hpgloe.com/json/getrec/?lat=37.234&lon=-122.234", {},
+                function (data) {
+                    //alert("here");
+                    alert(data);
+                }).fail(function (jqXHR, textStatus, errorThrown) { alert("fail " + errorThrown); });
+            */
+            
+            $.ajax({
+                      url: 'http://'+ip+'/citysummary/_design/mapreduce/_view/emotionTemp?key=%22Adelaide%22',
+                      dataType: 'jsonp',
+                      type: 'get',
+                      success: function(data){
+                        var axisData = new Array(data.rows.length);
+                        var positive = new Array(data.rows.length);
+                        var netrual  = new Array(data.rows.length);
+                        var negative = new Array(data.rows.length);
+                        var high     = new Array(data.rows.length);
+                        var low      = new Array(data.rows.length);
+                        var tweets   = new Array(data.rows.length);
+
+                        for(i=0; i<data.rows.length;i++)
+                        {
+                          axisData[i]=data.rows[i].value[0];
+                          positive[i]=(data.rows[i].value[1]*100).toFixed(2);
+                          netrual[i] =(data.rows[i].value[2]*100).toFixed(2);
+                          negative[i]=(data.rows[i].value[3]*100).toFixed(2);
+                          high[i]    =data.rows[i].value[4];
+                          low[i]     =data.rows[i].value[5];
+                          tweets[i]  =data.rows[i].value[6];
+                        }
+
+                        option = {
+                            title : {
+                                text: 'Adelaide'
+                            },
+                            tooltip : {
+                                trigger: 'axis',
+                                showDelay: 10,             // 显示延迟，添加显示延迟可以避免频繁切换，单位ms
+                                formatter: function (params) {
+                                    var res = params[0].name;
+                                    res += '<br/>' + 'Emotion Percentage';
+                                    res += '<br/>  Netrual : ' + params[1].value;
+                                    res += '<br/>  Positive : ' + params[0].value;
+                                    res += '<br/>  Negative : ' + params[2].value;
+                                    return res;
+                                }
+                            },
+                            legend: {
+                                data:['Positive','Netrual','Negative','High','Low','tweets']
+                            },
+                            toolbox: {
+                                show : true,
+                                feature : {
+                                    magicType : {show: true, type: ['line', 'bar']},
+                                    restore : {show: true},
+                                    saveAsImage : {show: true}
+                                }
+                            },
+                            dataZoom : {
+                                y: 250,
+                                show : true,
+                                realtime: true,
+                                start : 50,
+                                end : 100
+                            },
+                            grid: {
+                                x: 80,
+                                y: 40,
+                                x2:20,
+                                y2:25
+                            },
+                            xAxis : [
+                                {
+                                    type : 'category',
+                                    boundaryGap : true,
+                                    axisTick: {onGap:false},
+                                    splitLine: {show:false},
+                                    data : axisData
+                                }
+                            ],
+                            yAxis : [
+                                {
+                                    type : 'value',
+                                    axisLabel : {
+                                        formatter: '{value} %'
+                                    }
+                                }
+                            ],
+                            series : [
+                            {
+                                name:'Positive',
+                                type:'line',
+                                smooth:true,  
+                                itemStyle: {
+                                    normal: {
+                                        color:  '#ffd700' ,
+                                        lineStyle: {        // 系列级个性化折线样式
+                                            width: 2
+                                        }
+                                    }
+                                },
+                                data: positive,
+                                // markPoint : {
+                                //     data : [
+                                //         {type : 'max', name: '最大值'},
+                                //         {type : 'min', name: '最小值'}
+                                //     ]
+                                // },
+                                markLine : {
+                                    data : [
+                                        {type : 'average', name: 'average'}
+                                    ]
+                                }
+                            },
+                            {
+                                name:'Netrual',
+                                type:'line',
+                                smooth:true,  
+                                itemStyle: {
+                                    normal: {
+                                        color:  '#7b68ee',
+                                        lineStyle: {        // 系列级个性化折线样式
+                                            width: 2
+                                        }
+                                    }
+                                },
+                                data: netrual,
+                                // markPoint : {
+                                //     data : [
+                                //         {type : 'max', name: '最大值'},
+                                //         {type : 'min', name: '最小值'}
+                                //     ]
+                                // },
+                                markLine : {
+                                    data : [
+                                        {type : 'average', name: 'average'}
+                                    ]
+                                }
+                            },
+                            {
+                                name:'Negative',
+                                type:'line',
+                                smooth:true,  
+                                itemStyle: {
+                                    normal: {
+                                        color: 'red',
+                                        lineStyle: {        // 系列级个性化折线样式
+                                            width: 2
+                                        }
+                                    }
+                                },
+                                data: negative,
+                                // markPoint : {
+                                //     data : [
+                                //         {name : '周最低', value : -2, xAxis: 1, yAxis: -1.5}
+                                //     ]
+                                // },
+                                markLine : {
+                                    data : [
+                                        {type : 'average', name : 'average'}
+                                    ]
+                                }
+                            },
+                            {
+                                name:'High',
+                                type:'line',
+                                symbol: 'none',
+                                data:[]
+                            },
+                            {
+                                name:'Low',
+                                type:'bar',
+                                data:[]
+                            },
+                            {
+                                name:'tweets',
+                                type:'bar',
+                                data:[]
+                            }
+                                
+                            ]
+                        };
+                        var myChart = echarts.init(document.getElementById('main1'));
+                        myChart.setOption(option);
+
+                        option2 = {
+                            tooltip : {
+                                trigger: 'axis',
+                                showDelay: 10,             // 显示延迟，添加显示延迟可以避免频繁切换，单位ms
+                                formatter: function (params) {
+                                    var res = params[0].name;
+                                    res += '<br/>' + 'Temprature';
+                                    res += '<br/>  High : ' + params[0].value;
+                                    res += '<br/>  Low : ' + params[1].value;                                    
+                                    return res;
+                                }
+                            },
+                            legend: {
+                                y : -30,
+                                data:['Positive','Netrual','Negative','High','Low','tweets']
+                            },
+                            toolbox: {
+                                y : -30,
+                                show : true,
+                                feature : {
+                                    mark : {show: true},
+                                    dataZoom : {show: true},
+                                    dataView : {show: true, readOnly: false},
+                                    magicType : {show: true, type: ['line', 'bar']},
+                                    restore : {show: true},
+                                    saveAsImage : {show: true}
+                                }
+                            },
+                            dataZoom : {
+                                show : true,
+                                realtime: true,
+                                start : 50,
+                                end : 100
+                            },
+                            grid: {
+                                x: 80,
+                                y:5,
+                                x2:20,
+                                y2:40
+                            },
+                            xAxis : [
+                                {
+                                    type : 'category',
+                                    position:'top',
+                                    boundaryGap : true,
+                                    axisLabel:{show:false},
+                                    axisTick: {onGap:false},
+                                    splitLine: {show:false},
+                                    data : axisData
+                                }
+                            ],
+                            yAxis : [
+                                {
+                                    type : 'value',
+                                    axisLabel : {
+                                        formatter: '{value} °C'
+                                    }
+                                }
+                            ],
+                            series : [
+                                {
+                                    name:'High',
+                                    type:'line',
+                                    symbol: 'none',
+                                    smooth:true,  
+                                    itemStyle: {
+                                        normal: {
+                                            color:  '#ff69b4',
+                                            lineStyle: {        // 系列级个性化折线样式
+                                                width: 2
+                                            }
+                                        }
+                                    },
+                                    data:high,
+                                    markLine : {
+                                        symbol : 'none',
+                                        itemStyle : {
+                                            normal : {
+                                                color:'#1e90ff',
+                                                label : {
+                                                    show:false
+                                                }
+                                            }
+                                        },
+                                        data : [
+                                            {type : 'average', name: 'average'}
+                                        ]
+                                    }
+                                },
+                                {
+                                    name:'Low',
+                                    type:'line',
+                                    symbol: 'none',
+                                    smooth:true,  
+                                    itemStyle: {
+                                        normal: {
+                                            color:  '#87cefa',
+                                            lineStyle: {        // 系列级个性化折线样式
+                                                width: 2
+                                            }
+                                        }
+                                    },
+                                    data: low,
+                                    markLine : {
+                                        symbol : 'none',
+                                        itemStyle : {
+                                            normal : {
+                                                color:'#1e90ff',
+                                                label : {
+                                                    show:false
+                                                }
+                                            }
+                                        },
+                                        data : [
+                                            {type : 'average', name: 'average'}
+                                        ]
+                                    }
+                                }
+                            ]
+                        };
+                        var myChart2 = echarts.init(document.getElementById('main2'));
+                        myChart2.setOption(option2);
+
+                        option3 = {
+                            tooltip : {
+                                trigger: 'axis',
+                                showDelay: 10,             // 显示延迟，添加显示延迟可以避免频繁切换，单位ms
+                                formatter: function (params) {
+                                    var res = params[0].name;
+                                    res += '<br/>  Tweets: ' + params[0].value;                              
+                                    return res;
+                                }
+                            },
+                            legend: {
+                                y : -30,
+                                data:['Positive','Netrual','Negative','High','Low','tweets']
+                            },
+                            toolbox: {
+                                y : -30,
+                                show : true,
+                                feature : {
+                                    mark : {show: true},
+                                    dataZoom : {show: true},
+                                    dataView : {show: true, readOnly: false},
+                                    magicType : {show: true, type: ['line', 'bar']},
+                                    restore : {show: true},
+                                    saveAsImage : {show: true}
+                                }
+                            },
+                            dataZoom : {
+                                y:200,
+                                show : true,
+                                realtime: true,
+                                start : 50,
+                                end : 100
+                            },
+                            grid: {
+                                x: 80,
+                                y:5,
+                                x2:20,
+                                y2:30
+                            },
+                            xAxis : [
+                                {
+                                    type : 'category',
+                                    position:'bottom',
+                                    boundaryGap : true,
+                                    axisTick: {onGap:false},
+                                    splitLine: {show:false},
+                                    data : axisData
+                                }
+                            ],
+                            yAxis : [
+                                {
+                                    type : 'value',
+                                    axisLabel : {
+                                        formatter: '{value}'
+                                    }
+                                }
+                            ],
+                            series : [
+                                {
+                                    name:'tweets',
+                                    type:'bar',
+                                    symbol: 'none',
+                                    itemStyle: {
+                                        normal: {
+                                            color:  '#ff7f50',
+                                            lineStyle: {        // 系列级个性化折线样式
+                                                width: 2,
+                                                type: 'dashed'
+                                            }
+                                        },
+                                        emphasis: {
+                                            color: '#1e90ff'
+                                        }
+                                    },
+                                    data: tweets,
+                                    markLine : {
+                                        symbol : 'none',
+                                        itemStyle : {
+                                            normal : {
+                                                color:'#1e90ff',
+                                                label : {
+                                                    show:false
+                                                }
+                                            }
+                                        },
+                                        data : [
+                                            {type : 'average', name: 'average'}
+                                        ]
+                                    }
+                                }
+                            ]
+                        };
+                       var  myChart3 = echarts.init(document.getElementById('main3'));
+                        myChart3.setOption(option3);
+
+                        myChart.connect([myChart2, myChart3]);
+                        myChart2.connect([myChart, myChart3]);
+                        myChart3.connect([myChart, myChart2]);
+
+                        setTimeout(function (){
+                            window.onresize = function () {
+                                myChart.resize();
+                                myChart2.resize();
+                                myChart3.resize();
+                            }
+                        },200)
+
+                      }
+                    });
+                    });
+
+
+
+        });
+    </script>
+</body>
+</html>
